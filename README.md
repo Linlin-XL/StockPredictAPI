@@ -147,47 +147,12 @@ To run the Stock Predict API, for example, run the following on the Terminal:
 docker-compose up db stock_api
 ```
 
-To test the Stock Predict API using httpie. for example, run the following on the Terminal:
+To test the Stock predicted volume using httpie:
 ```sh
 http POST http://127.0.0.1:8000/api/stock/volumes/ vol_moving_avg=12345 price_rolling_med:=25
-
-HTTP/1.1 201 Created
-Allow: GET, POST, HEAD, OPTIONS
-Content-Length: 92
-Content-Type: application/json
-Date: Sat, 20 May 2023 20:16:54 GMT
-Referrer-Policy: same-origin
-Server: WSGIServer/0.2 CPython/3.9.16
-Vary: Cookie
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-
-{
-    "predict_model": 2,
-    "predict_volume": 11785.0,
-    "price_rolling_med": 25.0,
-    "vol_moving_avg": 12345
-}
 ```
 
+To test the ETF predicted volume using httpie:
 ```sh
 http POST http://127.0.0.1:8000/api/etf/volumes/ vol_moving_avg=12345 price_rolling_med:=25
-
-HTTP/1.1 201 Created
-Allow: GET, POST, HEAD, OPTIONS
-Content-Length: 92
-Content-Type: application/json
-Date: Sat, 20 May 2023 20:17:28 GMT
-Referrer-Policy: same-origin
-Server: WSGIServer/0.2 CPython/3.9.16
-Vary: Cookie
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-{
-    "predict_model": 1,
-    "predict_volume": 19990.0,
-    "price_rolling_med": 25.0,
-    "vol_moving_avg": 12345
-}
 ```
-
