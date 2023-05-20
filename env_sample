@@ -1,0 +1,15 @@
+APP_ENV=<development|uat|production>
+DEBUG=<True|False>
+DJANGO_SECRET_KEY=<SOME_SECRET>
+ALLOWED_HOSTS='<HOST1|HOST2|HOST3>
+Stock_Config='stock_data/input/stock_config.json'
+Spark_Config='stock_data/input/spark_config.json'
+ETL_Data_Path='stock_data/output_data'
+ETL_Model_Path='stock_data/output_model'
+API_Model_Path='predict_model/output'
+SQL_ENGINE='django.db.backends.postgresql'
+POSTGRES_DB='stock_api_db'
+POSTGRES_USER='db_admin'
+POSTGRES_PASSWORD='password54321'
+POSTGRES_HOST='db'
+POSTGRES_PORT=5432

@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:latest
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+  stock_api:
+    build: ./stock_api
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./stock_api:/app
+      - predict_model:/app/private_assets/predict_model
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  stock_etl:
+    build: ./stock_etl
+    volumes:
+      - ./stock_etl:/app
+      - ./stock_data:/app/stock_data
+      - predict_model:/app/predict_model
+    env_file:
+      - .env
+
+  etl_data:
+    image: python:3.9-slim
+    volumes:
+      - ./stock_data:/app/stock_data
+      - predict_model:/app/predict_model
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
+  predict_model:
