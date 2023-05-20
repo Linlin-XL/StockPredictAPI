@@ -1,0 +1,16 @@
+[
+  {
+    "model": "api.StockPredictorModel",
+    "fields": {
+        "name": "Predict_Volume_2019_v1_ETF_Model.joblib",
+        "job_path": "private_assets/predict_model/output/Predict_Volume_2019_v1_ETF_Model.joblib"
+      }
+  },
+  {
+    "model": "api.StockPredictorModel",
+    "fields": {
+        "name": "Predict_Volume_2019_v1_Stock_Model.joblib",
+        "job_path": "private_assets/predict_model/output/Predict_Volume_2019_v1_Stock_Model.joblib"
+      }
+  }
+]
