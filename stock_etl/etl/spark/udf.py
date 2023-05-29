@@ -20,7 +20,7 @@ get_symbol_filename_udf = F.udf(get_symbol_filename, StringType())
 
 
 def number_sign(data):
-    if data is None or data == 0:
+    if data is None:
         return None
     return (data > 0) - (data < 0)
 

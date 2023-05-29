@@ -1,0 +1,5 @@
+{
+    "spark.master": "local[*]",
+    "spark.driver.memory": "1G",
+    "spark.executor.memory": "2G"
+}

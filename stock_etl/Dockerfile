@@ -5,7 +5,7 @@ ARG PYTHON_VERSION=3.9.8
 FROM python:${PYTHON_VERSION}-${IMAGE_VARIANT} AS py3
 FROM openjdk:${OPENJDK_VERSION}-${IMAGE_VARIANT}
 
-RUN apt-get update && apt-get -y install rsync
+RUN apt-get update && apt-get -y install procps rsync
 
 COPY --from=py3 / /
 

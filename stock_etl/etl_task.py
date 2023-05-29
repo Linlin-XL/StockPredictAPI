@@ -18,11 +18,12 @@ def start_etl_task(spark, stock_config, output_data, output_model):
     start_date = stock_config.get('Start_Date')
     end_date = stock_config.get('End_Date')
     etl_steps = stock_config.get('ETL_Steps', ['Step1', 'Step2', 'Step3'])
+    predictors = stock_config.get('Predictors')
 
     for stock_type, stock_csv in stock_config['Stock_Data'].items():
-        data_ingest = os.path.join(output_data, f'{model_name}_{stock_type}_Ingest_Data')
-        data_staging = os.path.join(output_data, f'{model_name}_{stock_type}_Stage_Data')
-        model_joblib = os.path.join(output_model, f'{model_name}_{stock_type}_Model.joblib')
+        data_ingest = os.path.join(output_data, f'{model_name}-{stock_type}_IngestData')
+        data_staging = os.path.join(output_data, f'{model_name}-{stock_type}_StageData')
+        model_output = os.path.join(output_model, f'{model_name}-{stock_type}')
 
         # Step 1 - Ingest the CSV file
         if "Step1" in etl_steps:
@@ -30,11 +31,11 @@ def start_etl_task(spark, stock_config, output_data, output_model):
 
         # Step 2 - Feature Engineering
         if "Step2" in etl_steps:
-            step2_extract_features.main(spark, data_ingest, data_staging)
+            step2_extract_features.main(spark, data_ingest, data_staging, start_date, end_date)
 
         # Step 3 - ML Training
-        if "Step3" in etl_steps:
-            step3_train_model.main(model_joblib, data_staging)
+        if "Step3" in etl_steps and predictors is not None:
+            step3_train_model.main(model_output, data_staging, predictors)
 
 
 def main(stock_config, spark_config=None):
@@ -67,14 +68,22 @@ if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser(description='Stock Data ETL Task')
     conf_sample = """
     {
-      "Model_Name": "Predict_Volume_2019_v1",
+      "Model_Name": "StockPredict_v1_2019",
+      "Output_Data": "stock_data/output_data",
+      "Output_Model": "stock_data/output_model",
       "Stock_Desc": "stock_data/input/symbols_valid_meta.csv",
       "Stock_Data": {
         "Stock": "stock_data/input/stocks",
         "ETF": "stock_data/input/etfs"
       },
       "Start_Date": "2019-01-01",
-      "ETL_Steps": ["Step1", "Step2", "Step3"]
+      "ETL_Steps": ["Step1", "Step2", "Step3"],  
+      "Predictors": [
+        {
+          "Target_Name": "Volume",
+          "Target_Features": ["future_volume", "vol_moving_avg", "adj_close_rolling_med"]
+        }
+      ]
     }
     """
     cli_parser.add_argument(
@@ -95,7 +104,7 @@ if __name__ == '__main__':
     if args.stock_conf is not None:
         stock_conf = json.load(args.stock_conf)
     else:
-        stock_env = os.getenv('Stock_Config', 'stock_data/input/stock_config.json')
+        stock_env = os.getenv('Stock_Config', 'stock_data/input/stock-config.json')
         if not os.path.exists(stock_env):
             raise ValueError(f'Stock config ({stock_env}) does not exists.')
         with open(stock_env) as fp:
@@ -105,15 +114,15 @@ if __name__ == '__main__':
     if len(required_keys) > 0:
         raise cli_parser.error(f"Missing configure {', '.join(required_keys)} in {args.config_file.name}")
 
-    if args.spark_conf is not None:
-        spark_conf = json.load(args.spark_conf)
-    else:
-        spark_env = os.getenv('Spark_Config', 'stock_data/input/spark_config.json')
+    if args.spark_conf is None:
+        spark_env = os.getenv('Spark_Config', 'stock_data/input/spark-config.json')
         if os.path.exists(spark_env):
             with open(spark_env) as fp:
                 spark_conf = json.load(fp)
         else:
             spark_conf = None
+    else:
+        spark_conf = json.load(args.spark_conf)
 
     print(f'stock_conf: {stock_conf}')
     print(f'spark_conf: {spark_conf}')

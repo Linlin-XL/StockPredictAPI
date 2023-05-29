@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import timedelta
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, FloatType, IntegerType, TimestampType
@@ -41,10 +42,12 @@ def main(spark, stock_csv, symbol_csv, start_date, end_date, data_output_path):
     ]
     if start_date is not None:
         logger.info(f'Start Date: {start_date}')
+        date_from = date_from - timedelta(days=30)
         df_daily = df_daily.filter(df_daily.Date2 >= date_from)
 
     if end_date is not None:
         logger.info(f'End Date: {end_date}')
+        date_to = date_to + timedelta(days=1)
         df_daily = df_daily.filter(df_daily.Date2 <= date_to)
 
     logger.info(df_daily.show(10))
