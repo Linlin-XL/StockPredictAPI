@@ -83,8 +83,12 @@ def main(model_output, staging_data_path, predictors):
 
 def build_predict_model(predict_model_path, data_df, feat_columns, num_features, n_estimators):
     print(f'feat_columns: {len(feat_columns)} - {feat_columns}')
-    price_df = data_df[feat_columns].sample(n=3000, random_state=RADOM_STATE)
-    desc_df = price_df.describe().reset_index()
+    if data_df.shape[0] > 5000:
+        price_df = data_df[feat_columns].sample(n=3000, random_state=RADOM_STATE)
+        desc_df = price_df.describe().reset_index()
+    else:
+        desc_df = data_df[feat_columns].describe().reset_index()
+
     print(desc_df)
     train_columns = feat_columns[1:]
     target = feat_columns[0]
