@@ -1,0 +1,28 @@
+{
+  "Model_Name": "StockPredict_v1_2019",
+  "Output_Data": "stock_data/output_data",
+  "Output_Model": "stock_data/output_model",
+  "Stock_Desc": "stock_data/input/symbols_valid_meta.csv",
+  "Stock_Data": {
+    "Stock": "stock_data/input/stocks",
+    "ETF": "stock_data/input/etfs"
+  },
+  "Start_Date": "2019-01-01",
+  "ETL_Steps": [
+    "Step1",
+    "Step2",
+    "Step3"
+  ],
+  "Predictors": [
+    {
+      "Target_Name": "Volume",
+      "Target_Features": ["future_volume", "vol_moving_avg", "adj_close_rolling_med"]
+    },
+    {
+      "Target_Name": "Price",
+      "Target_Features": [
+        "future_adj_close", "vol_moving_avg", "adj_close_rolling_med", "adj_close_daily_std"
+      ]
+    }
+  ]
+}

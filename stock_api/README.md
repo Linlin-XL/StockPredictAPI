@@ -22,12 +22,12 @@ To start stock API web service, for example, run the following on the Terminal:
 python manage.py runserver 0.0.0.0:8000
 ```
 
-To test the Stock predicted volume using httpie, for example, run the following on the Terminal:
+To test the Stock predicted volume using httpie:
 ```sh
-http POST http://127.0.0.1:8000/api/stock/volumes/ vol_moving_avg=12345 price_rolling_med:=25
+http POST http://127.0.0.1:8000/api/predict/Stock/Volume/ vol_moving_avg=12345 price_rolling_med:=25
 ```
 
-To test the ETF predicted volume using httpie, for example, run the following on the Terminal:
+To test the ETF predicted volume using httpie:
 ```sh
-http POST http://127.0.0.1:8000/api/etf/volumes/ vol_moving_avg=12345 price_rolling_med:=25
+http POST http://127.0.0.1:8000/api/predict/ETF/Volume/ vol_moving_avg=12345 price_rolling_med:=25
 ```

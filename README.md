@@ -13,12 +13,14 @@ $ docker-compose build
 ```
 
 ## Step 2: Parameter Configuration
-Create a copy of `stock_data/input/stock_config.json` file with `cp stock_sample.json stock_data/input/stock_config.json`, and set the ETL configures to your desired values. 
+Create a copy of `stock_data/input/stock-config.json` file with `cp stock-sample.json stock_data/input/stock-config.json`, and set the ETL configures to your desired values. 
 
-A sample configure in `stock_config.json` looks like this:
+A sample configure in `stock-config.json` looks like this:
 ```json
 {
-  "Model_Name": "Predict_Volume_2019_v1",
+  "Model_Name": "StockPredict_v1_2019",
+  "Output_Data": "stock_data/output_data",
+  "Output_Model": "stock_data/output_model",
   "Stock_Desc": "stock_data/input/symbols_valid_meta.csv",
   "Stock_Data": {
     "Stock": "stock_data/input/stocks",
@@ -29,6 +31,18 @@ A sample configure in `stock_config.json` looks like this:
     "Step1",
     "Step2",
     "Step3"
+  ],  
+  "Predictors": [
+    {
+      "Target_Name": "Volume",
+      "Target_Features": ["future_volume", "vol_moving_avg", "adj_close_rolling_med"]
+    },
+    {
+      "Target_Name": "Price",
+      "Target_Features": [
+        "future_adj_close", "vol_moving_avg", "adj_close_rolling_med", "adj_close_daily_std"
+      ]
+    }
   ]
 }
 ```
@@ -47,12 +61,21 @@ docker-compose up db stock_api
 
 To test the Stock predicted volume using httpie:
 ```sh
-http POST http://127.0.0.1:8000/api/stock/volumes/ vol_moving_avg=12345 price_rolling_med:=25
+http POST http://127.0.0.1:8000/api/predict/Stock/Volume/ vol_moving_avg=12345 price_rolling_med:=25
+```
+
+To test the Stock predicted price using httpie:
+```sh
+http POST http://127.0.0.1:8000/api/predict/Stock/Price/ vol_moving_avg=12345 price_rolling_med:=25 price_daily_std:=0.021
 ```
 
 To test the ETF predicted volume using httpie:
 ```sh
-http POST http://127.0.0.1:8000/api/etf/volumes/ vol_moving_avg=12345 price_rolling_med:=25
+http POST http://127.0.0.1:8000/api/predict/ETF/Volume/ vol_moving_avg=12345 price_rolling_med:=25
+```
+To test the ETF predicted price using httpie:
+```sh
+http POST http://127.0.0.1:8000/api/predict/ETF/Price/ vol_moving_avg=12345 price_rolling_med:=25 price_daily_std:=0.021
 ```
 
 ## Work Sample for Data Engineer
