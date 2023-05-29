@@ -11,8 +11,6 @@ urlpatterns = [
     path('session/', views.SessionView.as_view(), name='api-session'),
     path('whoami/', views.WhoAmIView.as_view(), name='api-whoami'),
     path('predictors/', views.PredictorList.as_view()),
-    path('predictors/detail/<int:pk>/', views.PredictorDetail.as_view()),
-    path('stock/volumes/', views.PredictStockVolumeList.as_view()),
-    path('etf/volumes/', views.PredictETFVolumeList.as_view()),
-    path('volumes/detail/<int:pk>/', views.PredictVolumeDetail.as_view()),
+    path('predictors/<int:pk>/', views.PredictorDetail.as_view()),
+    path('predict/<str:stock_type>/<str:predict_type>/', views.StockPredict.as_view()),
 ]

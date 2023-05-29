@@ -1,7 +1,7 @@
 import json
 import os
 
-from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.contrib.auth import authenticate, login, logout
@@ -14,17 +14,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_204_NO_CONTENT
 
-from .models import StockPredictorModel, StockVolumeModel
-from .serializer import StockVolumeSerializer, StockPredictorSerializer
-from .predict_joblib import predict_volume_joblib
-
-
-def get_stock_volume(pred_model, price_median, volume_average):
-    if not os.path.exists(pred_model.job_path):
-        return {'Error': f'Predictor path does not exist: {pred_model.job_path}'}
-
-    result = predict_volume_joblib(pred_model.job_path, volume_average, price_median)
-    return result
+from .models import StockPredictorModel, PredictHistModel
+from .serializer import StockPredictorSerializer, PredictHistModelSerializer
+from .predict_joblib import predict_model_joblib
 
 
 def get_csrf(request):
@@ -82,115 +74,70 @@ class PredictorList(APIView):
     List all stock predictors.
     """
     def get(self, request, format=None):
-        predictors = StockPredictorModel.objects.all()
-        serializer = StockPredictorSerializer(predictors, many=True)
+        items = StockPredictorModel.objects.all()
+        serializer = StockPredictorSerializer(items, many=True)
         return Response(serializer.data)
-
-    def post(self, request, format=None):
-        data = JSONParser().parse(request)
-        print(f'predictor_list - POST: {data}')
-        serializer = StockPredictorSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class PredictorDetail(APIView):
     """
     Retrieve a stock predictor.
     """
-
-    def get_object(self, pk):
-        try:
-            predictor = StockPredictorModel.objects.get(pk=pk)
-        except StockPredictorModel.DoesNotExist:
-            raise Http404
-
     def get(self, request, pk, format=None):
-        predictor = self.get_object(pk)
-        serializer = StockPredictorSerializer(predictor)
+        item = get_object_or_404(StockPredictorModel.objects.all(), pk=pk)
+        print(f'StockPredictorModel: {item} - {item.__dict__}')
+        serializer = StockPredictorSerializer(item)
         return Response(serializer.data)
 
-    def delete(self, request, pk, format=None):
-        predictor = self.get_object(pk)
-        predictor.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
 
-
-class PredictStockVolumeList(APIView):
+class StockPredict(APIView):
     """
-    List all stock volumes.
+    Retrieve a stock prediction.
     """
-    def get(self, request, format=None):
-        pred_model = StockPredictorModel.objects.get(name='Predict_Volume_2019_v1_Stock_Model.joblib')
-        print('PredictStockVolumeList:', pred_model.name)
-        pred_volumes = StockVolumeModel.objects.filter(predict_model=pred_model)
-        serializer = StockVolumeSerializer(pred_volumes, many=True)
-        return Response(serializer.data)
+    def post(self, request, stock_type, predict_type, *args, **kwargs):
+        pred_model = get_list_or_404(StockPredictorModel.objects.all(),
+                                     stock_type=stock_type, predict_type=predict_type)
 
-    def post(self, request, format=None):
-        pred_model = StockPredictorModel.objects.get(name='Predict_Volume_2019_v1_Stock_Model.joblib')
-        print('StockPredictorModel:', pred_model.name)
         data = JSONParser().parse(request)
-        data['predict_model'] = pred_model.id
-        pred_volume = get_stock_volume(pred_model, data['price_rolling_med'], data['vol_moving_avg'])
-        print('pred_volume:', pred_volume)
-        data['predict_volume'] = pred_volume.get('Volume')
-        print(f'PredictVolumeList - POST: {data}')
-        serializer = StockVolumeSerializer(data=data)
-        print(f'PredictVolumeList - serializer: {repr(serializer)}')
+        data['predict_model'] = pred_model[0].id
+        print(f'request data: {stock_type} - {predict_type} - {data}')
+
+        result = get_stock_predict(pred_model[0], data)
+        if result.get('Error') is not None:
+            return Response(result, status=HTTP_400_BAD_REQUEST)
+
+        data.update(result)
+        print(f'updated data: {data}')
+
+        serializer = PredictHistModelSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=HTTP_201_CREATED)
 
 
-class PredictETFVolumeList(APIView):
-    """
-    List all stock volumes.
-    """
-    def get(self, request, format=None):
-        pred_model = StockPredictorModel.objects.get(name='Predict_Volume_2019_v1_ETF_Model.joblib')
-        print('PredictETFVolumeList:', pred_model.name)
-        pred_volumes = StockVolumeModel.objects.filter(predict_model=pred_model)
-        serializer = StockVolumeSerializer(pred_volumes, many=True)
-        return Response(serializer.data)
+def get_stock_predict(pred_model, data):
+    if not os.path.exists(pred_model.job_path):
+        return {'Error': f'Predict model path does not exist: {pred_model.job_path}'}
 
-    def post(self, request, format=None):
-        data = JSONParser().parse(request)
-        print(f'PredictVolumeList - POST data: {data}')
-        pred_model = StockPredictorModel.objects.get(name='Predict_Volume_2019_v1_ETF_Model.joblib')
-        data['predict_model'] = pred_model.id
-        pred_volume = get_stock_volume(pred_model, data['price_rolling_med'], data['vol_moving_avg'])
-        print('pred_volume:', pred_volume)
-        data['predict_volume'] = pred_volume.get('Volume')
-        serializer = StockVolumeSerializer(data=data)
-        print(f'PredictVolumeList - serializer: {repr(serializer)}')
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+    # Make predictions
+    volume_avg = int(data.get('vol_moving_avg'))
+    price_med = float(data.get('price_rolling_med'))
+    if pred_model.predict_type == 'Volume':
+        request_data = [
+            [volume_avg, price_med]
+        ]
+    else:
+        price_std = float(data.get('price_daily_std'))
+        request_data = [
+            [volume_avg, price_med, price_std]
+        ]
 
+    predict_type = pred_model.predict_type.lower()
+    print(f'Request_data: {predict_type} - {request_data}')
 
-class PredictVolumeDetail(APIView):
-    """
-    Retrieve or delete a StockVolume
-    """
+    result = predict_model_joblib(pred_model.job_path, request_data)
+    if result is None:
+        return {'Error': f'Predict model does not work.'}
 
-    def get_object(self, pk):
-        try:
-            pred_volume = StockVolumeModel.objects.get(pk=pk)
-        except StockVolumeModel.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        pred_volume = self.get_object(pk)
-        serializer = StockVolumeSerializer(pred_volume)
-        return Response(serializer.data)
-
-    def delete(self, request, pk, format=None):
-        pred_volume = self.get_object(pk)
-        pred_volume.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
-
+    return {predict_type: result[0]}

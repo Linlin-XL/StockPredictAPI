@@ -1,0 +1,38 @@
+[
+  {
+    "model": "api.StockPredictorModel",
+    "fields": {
+        "name": "StockPredict_v1_2019-Stock_Price_Model",
+        "stock_type": "Stock",
+        "predict_type": "Price",
+        "job_path": "private_assets/predict_model/output/StockPredict_v1_2019-Stock_Price_Model.joblib"
+      }
+  },
+  {
+    "model": "api.StockPredictorModel",
+    "fields": {
+        "name": "StockPredict_v1_2019-Stock_Volume_Model",
+        "stock_type": "Stock",
+        "predict_type": "Volume",
+        "job_path": "private_assets/predict_model/output/StockPredict_v1_2019-Stock_Volume_Model.joblib"
+      }
+  },
+  {
+    "model": "api.StockPredictorModel",
+    "fields": {
+        "name": "StockPredict_v1_2019-ETF_Price_Model",
+        "stock_type": "ETF",
+        "predict_type": "Price",
+        "job_path": "private_assets/predict_model/output/StockPredict_v1_2019-ETF_Price_Model.joblib"
+      }
+  },
+  {
+    "model": "api.StockPredictorModel",
+    "fields": {
+        "name": "StockPredict_v1_2019-ETF_Volume_Model",
+        "stock_type": "ETF",
+        "predict_type": "Volume",
+        "job_path": "private_assets/predict_model/output/StockPredict_v1_2019-ETF_Volume_Model.joblib"
+      }
+  }
+]

@@ -9,7 +9,7 @@ def clear_predictor_table(apps, schema_editor):
 
 def populate_predictor_table(apps, schema_editor):
     clear_predictor_table(apps, schema_editor)
-    call_command('loaddata', 'stock_predict_data.json')
+    call_command('loaddata', 'stock_predictor_data.json')
 
 
 class Migration(migrations.Migration):
